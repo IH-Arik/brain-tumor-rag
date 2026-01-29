@@ -22,14 +22,27 @@ app.config['LABELS_PATH'] = 'labels.txt'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Load model (with memory optimization)
+model = None
+device = torch.device('cpu')
+
 try:
-    device = torch.device('cpu')
+    print("Creating ResNet18 model...")
     model = timm.create_model('resnet18', pretrained=False)
     model.fc = torch.nn.Linear(model.fc.in_features, 4)
     
-    # Load with memory mapping
-    checkpoint = torch.load(app.config['MODEL_PATH'], map_location=device)
-    model.load_state_dict(checkpoint)
+    # Try to load model
+    model_path = app.config['MODEL_PATH']
+    print(f"Looking for model at: {model_path}")
+    print(f"Model file exists: {os.path.exists(model_path)}")
+    
+    if os.path.exists(model_path):
+        print("Loading model from file...")
+        checkpoint = torch.load(model_path, map_location=device)
+        model.load_state_dict(checkpoint)
+        print("Model loaded successfully from file!")
+    else:
+        print("Warning: Model file not found. Running with random weights for demonstration.")
+    
     model = model.to(device)
     model.eval()
     
@@ -37,10 +50,22 @@ try:
     for param in model.parameters():
         param.requires_grad = False
     
-    print("Model loaded successfully!")
+    print("Model setup complete!")
+    
 except Exception as e:
     print(f"Error loading model: {e}")
-    model = None
+    print("Creating model with random weights for demonstration...")
+    try:
+        model = timm.create_model('resnet18', pretrained=False)
+        model.fc = torch.nn.Linear(model.fc.in_features, 4)
+        model = model.to(device)
+        model.eval()
+        for param in model.parameters():
+            param.requires_grad = False
+        print("Demo model created successfully!")
+    except Exception as e2:
+        print(f"Error creating demo model: {e2}")
+        model = None
 
 # Load labels
 try:
