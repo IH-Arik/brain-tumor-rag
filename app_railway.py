@@ -142,6 +142,7 @@ def safe_setup_rag():
                     print(f"✅ Ollama working! Test: {test_response[:30]}...")
                 except Exception as e:
                     print(f"⚠️ Ollama test failed: {e}")
+                    print("ℹ️ Skipping model download to prevent container kill")
                     llm = None
             else:
                 print("⚠️ Ollama server not reachable")
