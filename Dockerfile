@@ -51,9 +51,6 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 # Set working directory
 WORKDIR /app
 
-# Copy requirements (for reference)
-COPY requirements.txt ./
-
 # Copy application files
 COPY app_ollama.py app_heroku.py
 
