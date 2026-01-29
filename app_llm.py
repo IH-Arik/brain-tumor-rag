@@ -29,6 +29,18 @@ device = torch.device('cpu')
 def download_model_from_railway():
     """Download model file from Railway Variables if available"""
     try:
+        # Try base64 encoded model file
+        model_file_base64 = os.environ.get('MODEL_FILE_BASE64')
+        if model_file_base64:
+            print("Found base64 model file in Railway Variables")
+            import base64
+            model_data = base64.b64decode(model_file_base64)
+            with open('brain_tumor_model.pth', 'wb') as f:
+                f.write(model_data)
+            print("Model file downloaded and decoded from Railway Variables")
+            return True
+        
+        # Try direct file data (if Railway supports file variables)
         model_file_data = os.environ.get('MODEL_FILE')
         if model_file_data:
             print("Found model file in Railway Variables")
@@ -39,6 +51,7 @@ def download_model_from_railway():
                 f.write(model_data)
             print("Model file downloaded from Railway Variables")
             return True
+            
     except Exception as e:
         print(f"Error downloading model from Railway: {e}")
     return False
