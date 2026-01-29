@@ -43,13 +43,16 @@ Thumbs.db
 # *.pkl
 # *.joblib
 
-# Uploads
-uploads/
-*.jpg
-*.jpeg
-*.png
-*.gif
-*.bmp
+# Uploads (keep empty folder, ignore contents)
+uploads/*
+!uploads/.gitkeep
+
+# Images (allow static images)
+# *.jpg
+# *.jpeg
+# *.png
+# *.gif
+# *.bmp
 
 # Vector index files
 *.faiss
