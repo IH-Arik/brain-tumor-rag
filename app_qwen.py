@@ -172,9 +172,17 @@ transform = transforms.Compose([
 def get_qwen_response(question):
     """Get response from Qwen2.5-1.5B model via Hugging Face API"""
     try:
-        # Hugging Face Inference API for Qwen2.5-1.5B (new router)
-        API_URL = "https://router.huggingface.co/hf/Qwen/Qwen2.5-1.5B-Instruct"
-        headers = {"Authorization": f"Bearer hf_nJjFqLmEYsWqXvZyKtRmHpNqUeVbXpLmN"}
+        # Get API key from Railway variables or use default
+        api_key = os.environ.get('HF_API_KEY', 'hf_nJjFqLmEYsWqXvZyKtRmHpNqUeVbXpLmN')
+        
+        # Try different API endpoints
+        api_urls = [
+            "https://api-inference.huggingface.co/models/Qwen/Qwen2.5-1.5B-Instruct",
+            "https://router.huggingface.co/hf/Qwen/Qwen2.5-1.5B-Instruct",
+            "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct"
+        ]
+        
+        headers = {"Authorization": f"Bearer {api_key}"}
         
         # Check if it's a medical question or general question
         question_lower = question.lower()
@@ -222,19 +230,37 @@ Answer:"""
             }
         }
         
-        response = requests.post(API_URL, headers=headers, json=payload, timeout=15)
+        # Try each API URL
+        for api_url in api_urls:
+            try:
+                print(f"Trying API URL: {api_url}")
+                response = requests.post(api_url, headers=headers, json=payload, timeout=15)
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    if isinstance(result, list) and len(result) > 0:
+                        generated_text = result[0].get('generated_text', '')
+                        if generated_text and len(generated_text.strip()) > 20:
+                            # Clean up the response
+                            clean_response = generated_text.replace(prompt, '').strip()
+                            if clean_response:
+                                print(f"✅ Qwen API success with: {api_url}")
+                                return clean_response
+                elif response.status_code == 429:
+                    print(f"Rate limited on {api_url}, trying next...")
+                    continue
+                elif response.status_code == 401:
+                    print(f"Unauthorized on {api_url} - API key may be invalid")
+                    continue
+                else:
+                    print(f"Failed on {api_url}: {response.status_code}")
+                    continue
+                    
+            except Exception as e:
+                print(f"Error with {api_url}: {e}")
+                continue
         
-        if response.status_code == 200:
-            result = response.json()
-            if isinstance(result, list) and len(result) > 0:
-                generated_text = result[0].get('generated_text', '')
-                if generated_text and len(generated_text.strip()) > 20:
-                    # Clean up the response
-                    clean_response = generated_text.replace(prompt, '').strip()
-                    if clean_response:
-                        return clean_response
-        
-        print("Qwen API failed, using fallback")
+        print("All Qwen API attempts failed, using fallback")
         return get_keyword_response(question)
         
     except Exception as e:
