@@ -177,7 +177,7 @@ def get_qwen_response(question):
         headers = {"Authorization": f"Bearer hf_nJjFqLmEYsWqXvZyKtRmHpNqUeVbXpLmN"}
         
         # Create medical context prompt
-        prompt = f"""You are a helpful medical AI assistant. Please provide accurate and informative answers to questions about brain tumors. Always include a disclaimer that this is not medical advice.
+        prompt = f"""You are a helpful medical AI assistant. Please provide accurate and informative answers to questions about brain tumors. Always include a medical disclaimer that this is not medical advice.
 
 Question: {question}
 
@@ -186,6 +186,8 @@ Please provide:
 2. Important context
 3. When to seek medical help
 4. General educational content
+
+IMPORTANT: Always end your response with: "This information is for educational purposes only and is not a substitute for professional medical advice. Always consult with a qualified healthcare provider for diagnosis and treatment."
 
 Answer:"""
         
@@ -271,15 +273,17 @@ def get_keyword_response(question):
             if keyword in question:
                 import random
                 response = random.choice(responses)
-                return f"{response} This is general medical information and not a substitute for professional medical advice. Always consult with a qualified healthcare provider for diagnosis and treatment."
+                return f"{response} This information is for educational purposes only and is not a substitute for professional medical advice. Always consult with a qualified healthcare provider for diagnosis and treatment."
     elif any(word in question for word in ['how to', 'treatment', 'cure', 'therapy']):
         import random
-        return random.choice(medical_responses.get('treatment', medical_responses.get('brain tumor')))
+        response = random.choice(medical_responses.get('treatment', medical_responses.get('brain tumor')))
+        return f"{response} This information is for educational purposes only and is not a substitute for professional medical advice. Always consult with a qualified healthcare provider for diagnosis and treatment."
     elif any(word in question for word in ['symptom', 'sign', 'warning']):
         import random
-        return random.choice(medical_responses.get('symptoms', medical_responses.get('brain tumor')))
+        response = random.choice(medical_responses.get('symptoms', medical_responses.get('brain tumor')))
+        return f"{response} This information is for educational purposes only and is not a substitute for professional medical advice. Always consult with a qualified healthcare provider for diagnosis and treatment."
     
-    return "I can provide general information about brain tumors. Please consult a doctor for medical advice."
+    return "I can provide general information about brain tumors. This information is for educational purposes only and is not a substitute for professional medical advice. Always consult with a qualified healthcare provider for diagnosis and treatment."
 
 @app.route('/')
 def index():
