@@ -176,8 +176,15 @@ def get_qwen_response(question):
         API_URL = "https://api-inference.huggingface.co/models/Qwen/Qwen2.5-1.5B-Instruct"
         headers = {"Authorization": f"Bearer hf_nJjFqLmEYsWqXvZyKtRmHpNqUeVbXpLmN"}
         
-        # Create medical context prompt
-        prompt = f"""You are a helpful medical AI assistant. Please provide accurate and informative answers to questions about brain tumors. Always include a medical disclaimer that this is not medical advice.
+        # Check if it's a medical question or general question
+        question_lower = question.lower()
+        medical_keywords = ['brain tumor', 'glioma', 'meningioma', 'pituitary', 'cancer', 'tumor', 'symptom', 'treatment', 'diagnosis', 'medical']
+        
+        is_medical = any(keyword in question_lower for keyword in medical_keywords)
+        
+        if is_medical:
+            # Medical context prompt
+            prompt = f"""You are a helpful medical AI assistant. Please provide accurate and informative answers to questions about brain tumors. Always include a medical disclaimer that this is not medical advice.
 
 Question: {question}
 
@@ -188,6 +195,19 @@ Please provide:
 4. General educational content
 
 IMPORTANT: Always end your response with: "This information is for educational purposes only and is not a substitute for professional medical advice. Always consult with a qualified healthcare provider for diagnosis and treatment."
+
+Answer:"""
+        else:
+            # General knowledge prompt
+            prompt = f"""You are a helpful AI assistant. Please provide accurate, informative, and engaging answers to any question. Be conversational and friendly while maintaining accuracy.
+
+Question: {question}
+
+Please provide:
+1. Clear, accurate information
+2. Relevant context and details
+3. Helpful explanations
+4. Engaging and educational content
 
 Answer:"""
         
@@ -387,7 +407,14 @@ def rag_stats():
         'categories': ['glioma', 'meningioma', 'pituitary', 'general'],
         'model_loaded': model is not None,
         'llm_available': True,
-        'llm_model': 'Qwen2.5-1.5B-Instruct'
+        'llm_model': 'Qwen2.5-1.5B-Instruct',
+        'capabilities': [
+            'Medical Q&A (Brain Tumors)',
+            'General Knowledge',
+            'Science & Technology',
+            'Conversational Chat',
+            'Educational Content'
+        ]
     })
 
 @app.route('/predict_with_rag', methods=['POST'])
