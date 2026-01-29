@@ -1,0 +1,17 @@
+[phases.setup]
+nixPkgs = ["...", "python39"]
+
+[phases.install]
+cmds = [
+  "python -m venv /opt/venv",
+  ". /opt/venv/bin/activate",
+  "pip install --upgrade pip",
+  "pip install -r requirements.slim.txt"
+]
+
+[start]
+cmd = "python app_heroku.py"
+
+[variables]
+PORT = "5000"
+PYTHONUNBUFFERED = "1"
