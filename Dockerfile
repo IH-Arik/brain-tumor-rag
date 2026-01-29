@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean
 
 # Create requirements.txt directly
-RUN echo -e "flask==2.3.3\ntorch==2.0.1\ntorchvision==0.15.2\npillow==10.0.0\nsentence-transformers==2.2.2\nscikit-learn==1.3.0\nfaiss-cpu==1.7.4\ntransformers==4.30.2\nnumpy==1.24.3" > requirements.txt
+RUN printf "flask==2.3.3\ntorch==2.0.1\ntorchvision==0.15.2\npillow==10.0.0\nsentence-transformers==2.2.2\nscikit-learn==1.3.0\nfaiss-cpu==1.7.4\ntransformers==4.30.2\nnumpy==1.24.3\n" > requirements.txt
 
 # Install Python packages
 RUN pip install --no-cache-dir -r requirements.txt
