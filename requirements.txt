@@ -1,0 +1,10 @@
+flask
+torch
+torchvision
+timm
+pillow
+sentence-transformers
+scikit-learn
+faiss-cpu
+transformers
+numpy
