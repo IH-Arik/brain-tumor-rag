@@ -101,8 +101,8 @@ transform = transforms.Compose([
 def get_huggingface_response(question):
     """Get response from Hugging Face free model"""
     try:
-        # Use a better model for medical Q&A
-        API_URL = "https://api-inference.huggingface.co/models/google/flan-t5-base"
+        # Use the new Hugging Face router API
+        API_URL = "https://router.huggingface.co/hf/google/flan-t5-base"
         headers = {"Authorization": f"Bearer hf_nJjFqLmEYsWqXvZyKtRmHpNqUeVbXpLmN"}
         
         # Create a better prompt for medical context
@@ -128,7 +128,7 @@ Please provide:
                         return clean_response
         
         # Try alternative model
-        API_URL2 = "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium"
+        API_URL2 = "https://router.huggingface.co/hf/microsoft/DialoGPT-medium"
         payload2 = {"inputs": question, "parameters": {"max_length": 150, "temperature": 0.8}}
         response2 = requests.post(API_URL2, headers=headers, json=payload2, timeout=10)
         
@@ -147,42 +147,91 @@ Please provide:
         print(f"Hugging Face API error: {e}")
         return get_keyword_response(question)
 
-# Enhanced keyword-based responses
+# Enhanced keyword-based responses (LLM-like without API)
 def get_keyword_response(question):
-    """Fallback keyword-based responses"""
+    """Enhanced keyword-based responses with LLM-like variations"""
     question = question.lower()
     
+    # Enhanced medical responses with more detail
     medical_responses = {
-        'glioma': 'Glioma is a type of tumor that occurs in the brain and spinal cord. It originates from glial cells and can be either benign or malignant. Common symptoms include headaches, seizures, and changes in behavior.',
-        'meningioma': 'Meningioma is a tumor that arises from the meninges, the membranes that surround the brain and spinal cord. Most meningiomas are benign (non-cancerous) and grow slowly.',
-        'pituitary': 'Pituitary tumors are abnormal growths that develop in the pituitary gland. They can affect hormone production and cause various symptoms depending on the hormones involved.',
-        'brain tumor': 'Brain tumors are masses of abnormal cells in the brain. They can be benign (non-cancerous) or malignant (cancerous). Treatment options include surgery, radiation therapy, and chemotherapy.',
-        'symptoms': 'Common brain tumor symptoms include persistent headaches, seizures, vision problems, memory loss, personality changes, and difficulty with balance or coordination.',
-        'treatment': 'Treatment options for brain tumors include surgery to remove the tumor, radiation therapy to kill cancer cells, chemotherapy drugs, and targeted therapy. The best treatment depends on tumor type, size, and location.',
-        'diagnosis': 'Brain tumors are diagnosed through imaging tests like MRI and CT scans, neurological exams, and sometimes biopsy. Early detection improves treatment outcomes.',
-        'prevention': 'While most brain tumors cannot be prevented, reducing exposure to radiation and maintaining a healthy lifestyle may help lower risk.',
-        'prognosis': 'Prognosis for brain tumors varies widely depending on type, grade, location, and how early it\'s detected. Benign tumors generally have better outcomes than malignant ones.',
-        'types': 'Common types of brain tumors include gliomas, meningiomas, pituitary tumors, and medulloblastomas. Each type has different characteristics and treatment approaches.'
+        'glioma': [
+            'Glioma is a type of tumor that occurs in the brain and spinal cord, originating from glial cells. These tumors can be benign or malignant and may require surgery, radiation, or chemotherapy depending on their grade and location.',
+            'Gliomas are primary brain tumors that develop from glial cells, which support nerve cells. They range from low-grade (slow-growing) to high-grade (aggressive) and are the most common type of brain tumor in adults.',
+            'A glioma is a tumor that starts in the glial cells of the brain or spinal cord. Treatment options include surgical removal, radiation therapy, and chemotherapy, with prognosis depending on tumor grade and location.'
+        ],
+        'meningioma': [
+            'Meningioma is a tumor that arises from the meninges, the membranes surrounding the brain and spinal cord. Most meningiomas are benign and grow slowly, often requiring monitoring or surgical removal if symptomatic.',
+            'Meningiomas are typically slow-growing tumors that form in the meninges. While usually non-cancerous, they can cause symptoms by pressing on brain tissue and may require surgery or radiation treatment.',
+            'A meningioma develops in the protective membranes covering the brain and spinal cord. These tumors are usually benign but can cause neurological symptoms depending on their size and location.'
+        ],
+        'pituitary': [
+            'Pituitary tumors are abnormal growths in the pituitary gland that can affect hormone production. They may cause hormonal imbalances, vision problems, and headaches, with treatment ranging from medication to surgery.',
+            'Tumors of the pituitary gland can disrupt normal hormone function, leading to various symptoms including hormonal changes, vision loss, and headaches. Treatment options include medication, radiation, or surgical removal.',
+            'Pituitary tumors are typically benign growths that can affect hormone production and regulation. They may cause endocrine disorders and require specialized treatment based on hormone levels.'
+        ],
+        'brain tumor': [
+            'Brain tumors are abnormal growths of cells in the brain that can be benign (non-cancerous) or malignant (cancerous). Symptoms vary widely but may include headaches, seizures, and changes in behavior or cognitive function.',
+            'A brain tumor is a mass or growth of abnormal cells in the brain. These tumors can originate in the brain (primary) or spread from other parts of the body (secondary), with treatment depending on type, size, and location.',
+            'Brain tumors are classified as either benign or malignant growths that affect brain function. Common symptoms include persistent headaches, seizures, vision problems, and personality changes.'
+        ],
+        'symptoms': [
+            'Common brain tumor symptoms include persistent headaches that worsen over time, seizures or convulsions, vision problems, memory loss, personality changes, difficulty with balance or coordination, and unexplained nausea or vomiting.',
+            'Brain tumor symptoms often include headaches that are different from normal headaches, seizures, vision or hearing changes, cognitive difficulties, weakness or numbness in parts of the body, and changes in personality or behavior.',
+            'Warning signs of brain tumors may include new or changing headache patterns, seizures, progressive loss of sensation or movement in arms or legs, difficulty with balance, speech problems, and personality or behavior changes.'
+        ],
+        'treatment': [
+            'Brain tumor treatment options include surgery to remove the tumor, radiation therapy to destroy cancer cells, chemotherapy drugs to kill rapidly dividing cells, and targeted therapy. The best approach depends on tumor type, size, and location.',
+            'Treatment for brain tumors typically involves a combination of surgery, radiation therapy, chemotherapy, and sometimes targeted therapy or immunotherapy. The treatment plan is personalized based on tumor characteristics.',
+            'Brain tumor treatment may include surgical removal, radiation therapy, chemotherapy, targeted therapy, and clinical trials. The specific treatment approach depends on tumor type, grade, location, and patient health.'
+        ],
+        'diagnosis': [
+            'Brain tumors are diagnosed through imaging tests like MRI and CT scans, neurological exams to assess brain function, and sometimes biopsy to examine tumor tissue. Early detection improves treatment outcomes.',
+            'Diagnosis of brain tumors involves neurological examinations, imaging studies (MRI, CT scans), and sometimes biopsy. Advanced imaging techniques help determine tumor type, size, and location for treatment planning.',
+            'Brain tumor diagnosis typically begins with neurological exams followed by imaging tests like MRI or CT scans. In some cases, a biopsy may be needed to determine the tumor type and grade.'
+        ],
+        'prevention': [
+            'While most brain tumors cannot be prevented, reducing exposure to radiation, maintaining a healthy lifestyle, avoiding smoking, and protecting the head from injury may help lower risk. Regular medical check-ups are important.',
+            'Primary prevention of brain tumors is limited, but avoiding unnecessary radiation exposure, maintaining good overall health, and seeking prompt medical attention for neurological symptoms may help with early detection.',
+            'Brain tumor prevention strategies include minimizing radiation exposure, maintaining a healthy immune system, avoiding known carcinogens, and seeking medical evaluation for persistent neurological symptoms.'
+        ],
+        'prognosis': [
+            'Prognosis for brain tumors varies widely depending on type (benign vs malignant), grade, location, size, and how early it\'s detected. Benign tumors generally have better outcomes than malignant ones.',
+            'Brain tumor prognosis depends on multiple factors including tumor type, grade, location, patient age, and overall health. Early detection and treatment significantly improve outcomes and quality of life.',
+            'The outlook for brain tumor patients varies based on tumor characteristics, treatment response, and individual health factors. Benign tumors typically have excellent prognoses, while malignant tumors require aggressive treatment.'
+        ],
+        'types': [
+            'Common types of brain tumors include gliomas (astrocytomas, glioblastomas), meningiomas, pituitary tumors, medulloblastomas, and schwannomas. Each type has different characteristics, growth patterns, and treatment approaches.',
+            'Brain tumors are classified by cell type and include gliomas, meningiomas, pituitary adenomas, medulloblastomas, and metastatic tumors. Classification helps determine treatment options and prognosis.',
+            'Major brain tumor categories include primary tumors (originating in brain tissue) and secondary tumors (spreading from elsewhere). Primary types include gliomas, meningiomas, and pituitary tumors.'
+        ]
     }
     
-    # Check for specific keywords
-    for keyword, answer in medical_responses.items():
+    # Check for specific keywords and return varied responses
+    for keyword, responses in medical_responses.items():
         if keyword in question:
-            return answer
+            # Return a random response from the list for variation
+            import random
+            return random.choice(responses)
     
-    # Additional keyword matching
+    # Additional keyword matching with varied responses
     if any(word in question for word in ['what is', 'define', 'explain']):
-        for keyword, answer in medical_responses.items():
+        for keyword, responses in medical_responses.items():
             if keyword in question:
-                return f"{answer} This is general medical information and not a substitute for professional medical advice."
+                import random
+                response = random.choice(responses)
+                return f"{response} This is general medical information and not a substitute for professional medical advice. Always consult with a qualified healthcare provider for diagnosis and treatment."
     elif any(word in question for word in ['how to', 'treatment', 'cure', 'therapy']):
-        return medical_responses.get('treatment', medical_responses.get('brain tumor'))
+        import random
+        return random.choice(medical_responses.get('treatment', medical_responses.get('brain tumor')))
     elif any(word in question for word in ['symptom', 'sign', 'warning']):
-        return medical_responses.get('symptoms', medical_responses.get('brain tumor'))
+        import random
+        return random.choice(medical_responses.get('symptoms', medical_responses.get('brain tumor')))
     elif any(word in question for word in ['diagnose', 'test', 'detection']):
-        return medical_responses.get('diagnosis', medical_responses.get('brain tumor'))
+        import random
+        return random.choice(medical_responses.get('diagnosis', medical_responses.get('brain tumor')))
     elif any(word in question for word in ['prevent', 'avoid', 'reduce risk']):
-        return medical_responses.get('prevention', medical_responses.get('brain tumor'))
+        import random
+        return random.choice(medical_responses.get('prevention', medical_responses.get('brain tumor')))
     
     return "I can provide general information about brain tumors. Please consult a doctor for medical advice."
 
