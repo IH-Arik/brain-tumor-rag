@@ -22,10 +22,11 @@ RUN pip install --no-cache-dir \
     flask-cors==4.0.0 \
     pillow==10.0.0 \
     timm==0.9.7 \
-    numpy==1.24.3
+    numpy==1.24.3 \
+    requests==2.31.0
 
 # Copy only essential application files
-COPY app_memory.py app_heroku.py
+COPY app_llm.py app_heroku.py
 
 # Create necessary directories and copy static files
 RUN mkdir -p uploads static
