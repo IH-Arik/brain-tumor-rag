@@ -27,8 +27,11 @@ RUN pip install --no-cache-dir \
 # Copy only essential application files
 COPY app_memory.py app_heroku.py
 
-# Create necessary directories
-RUN mkdir -p uploads static templates
+# Create necessary directories and copy static files
+RUN mkdir -p uploads static
+
+# Copy static files explicitly
+COPY static/ static/
 
 # Copy templates
 COPY templates/ templates/
