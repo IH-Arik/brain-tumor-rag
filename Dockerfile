@@ -44,6 +44,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
     curl \
+    zstd \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
