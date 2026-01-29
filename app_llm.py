@@ -101,20 +101,46 @@ transform = transforms.Compose([
 def get_huggingface_response(question):
     """Get response from Hugging Face free model"""
     try:
-        API_URL = "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium"
+        # Use a better model for medical Q&A
+        API_URL = "https://api-inference.huggingface.co/models/google/flan-t5-base"
         headers = {"Authorization": f"Bearer hf_nJjFqLmEYsWqXvZyKtRmHpNqUeVbXpLmN"}
         
-        payload = {"inputs": question}
-        response = requests.post(API_URL, headers=headers, json=payload)
+        # Create a better prompt for medical context
+        prompt = f"""As a medical AI assistant, provide a helpful and informative answer to this question about brain tumors: {question}
+
+Please provide:
+1. Clear, accurate information
+2. Important context
+3. When to seek medical help
+4. General educational content (not medical advice)"""
+        
+        payload = {"inputs": prompt, "parameters": {"max_length": 200, "temperature": 0.7}}
+        response = requests.post(API_URL, headers=headers, json=payload, timeout=10)
         
         if response.status_code == 200:
             result = response.json()
             if isinstance(result, list) and len(result) > 0:
                 generated_text = result[0].get('generated_text', '')
-                if generated_text:
-                    return generated_text
+                if generated_text and len(generated_text.strip()) > 20:
+                    # Clean up the response
+                    clean_response = generated_text.replace(prompt, '').strip()
+                    if clean_response:
+                        return clean_response
+        
+        # Try alternative model
+        API_URL2 = "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium"
+        payload2 = {"inputs": question, "parameters": {"max_length": 150, "temperature": 0.8}}
+        response2 = requests.post(API_URL2, headers=headers, json=payload2, timeout=10)
+        
+        if response2.status_code == 200:
+            result2 = response2.json()
+            if isinstance(result2, list) and len(result2) > 0:
+                generated_text2 = result2[0].get('generated_text', '')
+                if generated_text2 and len(generated_text2.strip()) > 20:
+                    return generated_text2.strip()
         
         # Fallback to keyword-based response
+        print("LLM failed, using keyword fallback")
         return get_keyword_response(question)
         
     except Exception as e:
@@ -226,16 +252,28 @@ def rag_query():
         data = request.get_json()
         question = data.get('question', '')
         
+        print(f"Received question: {question}")
+        
         # Try Hugging Face LLM first
         response = get_huggingface_response(question)
+        
+        print(f"Generated response: {response[:100]}...")
+        
+        # Check if response is meaningful
+        if len(response.strip()) < 20:
+            response = get_keyword_response(question)
+            print("Used keyword fallback due to short response")
         
         return jsonify({
             'answer': response,
             'sources': [{'title': 'Hugging Face LLM + Medical Knowledge Base', 'relevance_score': 0.9}],
-            'llm_used': 'Hugging Face DialoGPT-medium'
+            'llm_used': 'Hugging Face FLAN-T5/DialoGPT',
+            'question_received': question,
+            'response_length': len(response)
         })
         
     except Exception as e:
+        print(f"RAG query error: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/rag/categories', methods=['GET'])
