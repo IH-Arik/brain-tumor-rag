@@ -22,14 +22,34 @@ app.config['LABELS_PATH'] = 'labels.txt'
 # Create uploads directory
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Load model (with memory optimization)
+# Load model (with memory optimization and Railway Variables support)
 model = None
 device = torch.device('cpu')
+
+def download_model_from_railway():
+    """Download model file from Railway Variables if available"""
+    try:
+        model_file_data = os.environ.get('MODEL_FILE')
+        if model_file_data:
+            print("Found model file in Railway Variables")
+            # If MODEL_FILE contains base64 encoded data
+            import base64
+            model_data = base64.b64decode(model_file_data)
+            with open('brain_tumor_model.pth', 'wb') as f:
+                f.write(model_data)
+            print("Model file downloaded from Railway Variables")
+            return True
+    except Exception as e:
+        print(f"Error downloading model from Railway: {e}")
+    return False
 
 try:
     print("Creating ResNet18 model...")
     model = timm.create_model('resnet18', pretrained=False)
     model.fc = torch.nn.Linear(model.fc.in_features, 4)
+    
+    # Try to download from Railway Variables first
+    download_model_from_railway()
     
     # Try to load model - check multiple paths
     model_paths = [
@@ -57,6 +77,7 @@ try:
     
     if not model_loaded:
         print("Warning: Model file not found. Running with random weights for demonstration.")
+        print("To fix: Upload model file to Railway Variables as MODEL_FILE")
     
     model = model.to(device)
     model.eval()
