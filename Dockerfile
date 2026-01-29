@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
 # Create requirements.txt with CPU-only versions
 RUN printf "flask==2.3.3\ntorch==2.0.1+cpu\ntorchvision==0.15.2+cpu\npillow==10.0.0\nsentence-transformers==2.2.2\nscikit-learn==1.3.0\nfaiss-cpu==1.7.4\ntransformers==4.30.2\nnumpy==1.24.3\n" > requirements.txt
 
-# Install Python packages with CPU-only PyTorch and compatible versions
+# Install Python packages with CPU-only PyTorch and minimal dependencies
 RUN pip install --no-cache-dir \
     --index-url https://download.pytorch.org/whl/cpu \
     torch==2.0.1+cpu \
@@ -20,18 +20,11 @@ RUN pip install --no-cache-dir \
     && pip install --no-cache-dir \
     flask==2.3.3 \
     pillow==10.0.0 \
-    "sentence-transformers==2.2.2" \
-    scikit-learn==1.3.0 \
-    faiss-cpu==1.7.4 \
-    "transformers==4.30.2" \
-    "huggingface-hub==0.16.4" \
+    timm==0.9.7 \
     numpy==1.24.3
 
 # Copy only essential application files
-COPY app_heroku.py .
-COPY knowledge_base.py .
-COPY vector_store.py .
-COPY rag_engine.py .
+COPY app_memory.py app_heroku.py
 
 # Create necessary directories
 RUN mkdir -p uploads static templates
