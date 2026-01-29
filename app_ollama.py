@@ -303,8 +303,29 @@ def setup_ollama_rag():
                         print(f"✅ Ollama connected with {working_model}! Test: {test_response[:50]}...")
                         
                     else:
-                        print("⚠️ No working Ollama models found")
-                        llm = None
+                        print("⚠️ No working Ollama models found. Downloading llama2...")
+                        try:
+                            # Download llama2 model
+                            import subprocess
+                            download_result = subprocess.run(['ollama', 'pull', 'llama2'], 
+                                                          capture_output=True, text=True, timeout=300)
+                            if download_result.returncode == 0:
+                                print("✅ llama2 model downloaded successfully!")
+                                working_model = "llama2"
+                                llm = Ollama(model=working_model, base_url=ollama_url, temperature=0.7)
+                                
+                                # Test the connection
+                                test_response = llm("Hello")
+                                print(f"✅ Ollama connected with {working_model}! Test: {test_response[:50]}...")
+                            else:
+                                print(f"❌ Failed to download llama2: {download_result.stderr}")
+                                llm = None
+                        except subprocess.TimeoutExpired:
+                            print("❌ Timeout downloading llama2 model")
+                            llm = None
+                        except Exception as e:
+                            print(f"❌ Error downloading llama2: {e}")
+                            llm = None
                         
                 else:
                     print(f"⚠️ Ollama server responded with: {response.status_code}")
