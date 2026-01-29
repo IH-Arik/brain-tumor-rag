@@ -248,7 +248,8 @@ def setup_ollama_rag():
         """
         
         # Create documents
-        documents = [knowledge_base]
+        from langchain.docstore.document import Document
+        documents = [Document(page_content=knowledge_base)]
         
         # Split text into chunks
         text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
@@ -260,7 +261,7 @@ def setup_ollama_rag():
         
         # Create vector store
         print("🗂️ Creating vector store...")
-        vector_store = FAISS.from_texts([text.page_content for text in texts], embeddings)
+        vector_store = FAISS.from_documents(texts, embeddings)
         
         # Setup Ollama LLM
         print("🦙 Setting up Ollama LLM...")
