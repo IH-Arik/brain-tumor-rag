@@ -37,11 +37,11 @@ ENV/
 .DS_Store
 Thumbs.db
 
-# Model files (too large for GitHub)
-*.pth
-*.pt
-*.pkl
-*.joblib
+# Model files (too large for GitHub - use Railway Variables)
+# *.pth
+# *.pt
+# *.pkl
+# *.joblib
 
 # Uploads
 uploads/

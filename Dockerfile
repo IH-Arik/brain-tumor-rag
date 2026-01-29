@@ -19,6 +19,7 @@ RUN pip install --no-cache-dir \
     torchvision==0.15.2+cpu \
     && pip install --no-cache-dir \
     flask==2.3.3 \
+    flask-cors==4.0.0 \
     pillow==10.0.0 \
     timm==0.9.7 \
     numpy==1.24.3
