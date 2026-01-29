@@ -15,7 +15,7 @@ PORT = "5000"
 
 [services.build]
 buildCommand = "pip install -r requirements.txt"
-startCommand = "sh -c 'ollama serve & python app_heroku.py'"
+startCommand = "python app_railway.py"
 
 [services.build.env]
 PYTHON_VERSION = "3.9"
