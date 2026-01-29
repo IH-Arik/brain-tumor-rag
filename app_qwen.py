@@ -172,8 +172,8 @@ transform = transforms.Compose([
 def get_qwen_response(question):
     """Get response from Qwen2.5-1.5B model via Hugging Face API"""
     try:
-        # Hugging Face Inference API for Qwen2.5-1.5B
-        API_URL = "https://api-inference.huggingface.co/models/Qwen/Qwen2.5-1.5B-Instruct"
+        # Hugging Face Inference API for Qwen2.5-1.5B (new router)
+        API_URL = "https://router.huggingface.co/hf/Qwen/Qwen2.5-1.5B-Instruct"
         headers = {"Authorization": f"Bearer hf_nJjFqLmEYsWqXvZyKtRmHpNqUeVbXpLmN"}
         
         # Check if it's a medical question or general question
@@ -280,10 +280,45 @@ def get_keyword_response(question):
         ]
     }
     
-    # Check for specific keywords and return varied responses
+    # General knowledge responses for non-medical questions
+    general_responses = {
+        'artificial intelligence': [
+            'Artificial Intelligence (AI) is a branch of computer science that aims to create intelligent machines capable of performing tasks that typically require human intelligence. This includes learning, reasoning, problem-solving, perception, and language understanding.',
+            'AI refers to the simulation of human intelligence in machines that are programmed to think and learn like humans. It encompasses various technologies including machine learning, neural networks, natural language processing, and computer vision.',
+            'Artificial Intelligence is the theory and development of computer systems that can perform tasks normally requiring human intelligence, such as visual perception, speech recognition, decision-making, and translation between languages.'
+        ],
+        'ai': [
+            'AI, or Artificial Intelligence, is transforming how we interact with technology by enabling machines to learn from experience, adapt to new inputs, and perform human-like tasks. From virtual assistants to self-driving cars, AI is revolutionizing numerous industries.',
+            'Artificial Intelligence represents the frontier of computer science, focusing on creating systems that can understand, learn, and apply knowledge. Modern AI includes machine learning, deep learning, and neural networks that power everything from recommendation systems to medical diagnosis.'
+        ],
+        'python': [
+            'Python is a high-level, interpreted programming language known for its simplicity, readability, and versatility. Created by Guido van Rossum in 1991, Python has become one of the most popular languages for web development, data science, artificial intelligence, and automation.',
+            'Python is a powerful programming language that emphasizes code readability and allows developers to express concepts in fewer lines of code. It supports multiple programming paradigms and has extensive libraries for data analysis, machine learning, web development, and scientific computing.'
+        ],
+        'programming': [
+            'Programming is the process of creating instructions that computers can follow to perform specific tasks. It involves writing code in programming languages, debugging errors, and designing algorithms to solve problems efficiently.',
+            'Programming is the art and science of creating computer software by writing, testing, and maintaining code. It requires logical thinking, problem-solving skills, and knowledge of programming languages and development tools.'
+        ],
+        'science': [
+            'Science is the systematic study of the natural world through observation and experimentation. It seeks to understand how things work and why they happen, using the scientific method to test hypotheses and build knowledge.',
+            'Science is a systematic enterprise that builds and organizes knowledge in the form of testable explanations and predictions about the universe. It encompasses various fields including physics, chemistry, biology, and earth sciences.'
+        ],
+        'technology': [
+            'Technology is the application of scientific knowledge for practical purposes, especially in industry. It includes tools, machines, techniques, systems, and methods of organization that solve problems and improve human capabilities.',
+            'Technology refers to the collection of tools, machines, systems, and processes that use scientific knowledge to perform practical tasks. From simple tools to complex computer systems, technology continuously evolves to meet human needs.'
+        ]
+    }
+    
+    # Check for medical keywords first
     for keyword, responses in medical_responses.items():
         if keyword in question:
-            # Return a random response from the list for variation
+            import random
+            response = random.choice(responses)
+            return f"{response} This information is for educational purposes only and is not a substitute for professional medical advice. Always consult with a qualified healthcare provider for diagnosis and treatment."
+    
+    # Check for general knowledge keywords
+    for keyword, responses in general_responses.items():
+        if keyword in question:
             import random
             return random.choice(responses)
     
@@ -294,6 +329,12 @@ def get_keyword_response(question):
                 import random
                 response = random.choice(responses)
                 return f"{response} This information is for educational purposes only and is not a substitute for professional medical advice. Always consult with a qualified healthcare provider for diagnosis and treatment."
+        
+        for keyword, responses in general_responses.items():
+            if keyword in question:
+                import random
+                return random.choice(responses)
+    
     elif any(word in question for word in ['how to', 'treatment', 'cure', 'therapy']):
         import random
         response = random.choice(medical_responses.get('treatment', medical_responses.get('brain tumor')))
@@ -303,7 +344,15 @@ def get_keyword_response(question):
         response = random.choice(medical_responses.get('symptoms', medical_responses.get('brain tumor')))
         return f"{response} This information is for educational purposes only and is not a substitute for professional medical advice. Always consult with a qualified healthcare provider for diagnosis and treatment."
     
-    return "I can provide general information about brain tumors. This information is for educational purposes only and is not a substitute for professional medical advice. Always consult with a qualified healthcare provider for diagnosis and treatment."
+    # Default response for unknown questions
+    default_responses = [
+        "I can provide information on various topics including medical conditions like brain tumors, as well as general subjects like science and technology. Please ask a more specific question.",
+        "I'm designed to help with medical information about brain tumors and general knowledge questions. Feel free to ask about specific topics you're interested in.",
+        "I can assist with questions about brain tumors, medical conditions, and general knowledge topics. What would you like to know more about?"
+    ]
+    
+    import random
+    return random.choice(default_responses)
 
 @app.route('/')
 def index():
