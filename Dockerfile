@@ -26,7 +26,6 @@ RUN pip install --no-cache-dir \
 
 # Copy only essential application files
 COPY app_memory.py app_heroku.py
-COPY brain_tumor_model.pth .
 
 # Create necessary directories and copy static files
 RUN mkdir -p uploads static
