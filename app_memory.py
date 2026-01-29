@@ -30,17 +30,31 @@ try:
     model = timm.create_model('resnet18', pretrained=False)
     model.fc = torch.nn.Linear(model.fc.in_features, 4)
     
-    # Try to load model
-    model_path = app.config['MODEL_PATH']
-    print(f"Looking for model at: {model_path}")
-    print(f"Model file exists: {os.path.exists(model_path)}")
+    # Try to load model - check multiple paths
+    model_paths = [
+        'brain_tumor_model.pth',
+        '/app/brain_tumor_model.pth',
+        './brain_tumor_model.pth'
+    ]
     
-    if os.path.exists(model_path):
-        print("Loading model from file...")
-        checkpoint = torch.load(model_path, map_location=device)
-        model.load_state_dict(checkpoint)
-        print("Model loaded successfully from file!")
-    else:
+    model_loaded = False
+    for model_path in model_paths:
+        print(f"Looking for model at: {model_path}")
+        print(f"Model file exists: {os.path.exists(model_path)}")
+        
+        if os.path.exists(model_path):
+            print("Loading model from file...")
+            try:
+                checkpoint = torch.load(model_path, map_location=device)
+                model.load_state_dict(checkpoint)
+                print("Model loaded successfully from file!")
+                model_loaded = True
+                break
+            except Exception as e:
+                print(f"Error loading model from {model_path}: {e}")
+                continue
+    
+    if not model_loaded:
         print("Warning: Model file not found. Running with random weights for demonstration.")
     
     model = model.to(device)
@@ -84,12 +98,16 @@ transform = transforms.Compose([
 
 # Simple RAG-like responses (memory efficient)
 MEDICAL_RESPONSES = {
-    'glioma': 'Glioma is a type of tumor that occurs in the brain and spinal cord. It originates from glial cells.',
-    'meningioma': 'Meningioma is a tumor that arises from the meninges, the membranes that surround the brain and spinal cord.',
-    'pituitary': 'Pituitary tumors are abnormal growths that develop in the pituitary gland.',
-    'brain tumor': 'Brain tumors are masses of abnormal cells in the brain. They can be benign or malignant.',
-    'symptoms': 'Common brain tumor symptoms include headaches, seizures, vision problems, and personality changes.',
-    'treatment': 'Treatment options include surgery, radiation therapy, chemotherapy, and targeted therapy.'
+    'glioma': 'Glioma is a type of tumor that occurs in the brain and spinal cord. It originates from glial cells and can be either benign or malignant. Common symptoms include headaches, seizures, and changes in behavior.',
+    'meningioma': 'Meningioma is a tumor that arises from the meninges, the membranes that surround the brain and spinal cord. Most meningiomas are benign (non-cancerous) and grow slowly.',
+    'pituitary': 'Pituitary tumors are abnormal growths that develop in the pituitary gland. They can affect hormone production and cause various symptoms depending on the hormones involved.',
+    'brain tumor': 'Brain tumors are masses of abnormal cells in the brain. They can be benign (non-cancerous) or malignant (cancerous). Treatment options include surgery, radiation therapy, and chemotherapy.',
+    'symptoms': 'Common brain tumor symptoms include persistent headaches, seizures, vision problems, memory loss, personality changes, and difficulty with balance or coordination.',
+    'treatment': 'Treatment options for brain tumors include surgery to remove the tumor, radiation therapy to kill cancer cells, chemotherapy drugs, and targeted therapy. The best treatment depends on tumor type, size, and location.',
+    'diagnosis': 'Brain tumors are diagnosed through imaging tests like MRI and CT scans, neurological exams, and sometimes biopsy. Early detection improves treatment outcomes.',
+    'prevention': 'While most brain tumors cannot be prevented, reducing exposure to radiation and maintaining a healthy lifestyle may help lower risk.',
+    'prognosis': 'Prognosis for brain tumors varies widely depending on type, grade, location, and how early it\'s detected. Benign tumors generally have better outcomes than malignant ones.',
+    'types': 'Common types of brain tumors include gliomas, meningiomas, pituitary tumors, and medulloblastomas. Each type has different characteristics and treatment approaches.'
 }
 
 @app.route('/')
@@ -154,13 +172,29 @@ def rag_query():
         data = request.get_json()
         question = data.get('question', '').lower()
         
-        # Simple keyword-based responses
+        # Better keyword matching
         response = "I can provide general information about brain tumors. Please consult a doctor for medical advice."
         
+        # Check for specific keywords
         for keyword, answer in MEDICAL_RESPONSES.items():
             if keyword in question:
                 response = answer
                 break
+        
+        # Additional keyword matching
+        if any(word in question for word in ['what is', 'define', 'explain']):
+            for keyword, answer in MEDICAL_RESPONSES.items():
+                if keyword in question:
+                    response = f"{answer} This is general medical information and not a substitute for professional medical advice."
+                    break
+        elif any(word in question for word in ['how to', 'treatment', 'cure', 'therapy']):
+            response = MEDICAL_RESPONSES.get('treatment', MEDICAL_RESPONSES.get('brain tumor'))
+        elif any(word in question for word in ['symptom', 'sign', 'warning']):
+            response = MEDICAL_RESPONSES.get('symptoms', MEDICAL_RESPONSES.get('brain tumor'))
+        elif any(word in question for word in ['diagnose', 'test', 'detection']):
+            response = MEDICAL_RESPONSES.get('diagnosis', MEDICAL_RESPONSES.get('brain tumor'))
+        elif any(word in question for word in ['prevent', 'avoid', 'reduce risk']):
+            response = MEDICAL_RESPONSES.get('prevention', MEDICAL_RESPONSES.get('brain tumor'))
         
         return jsonify({
             'answer': response,
