@@ -9,20 +9,11 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-# Copy requirements first
-COPY requirements.slim.txt requirements.txt
+# Create requirements.txt directly
+RUN echo -e "flask==2.3.3\ntorch==2.0.1\ntorchvision==0.15.2\npillow==10.0.0\nsentence-transformers==2.2.2\nscikit-learn==1.3.0\nfaiss-cpu==1.7.4\ntransformers==4.30.2\nnumpy==1.24.3" > requirements.txt
 
-# Install only essential Python packages
-RUN pip install --no-cache-dir \
-    flask==2.3.3 \
-    torch==2.0.1 \
-    torchvision==0.15.2 \
-    pillow==10.0.0 \
-    sentence-transformers==2.2.2 \
-    scikit-learn==1.3.0 \
-    faiss-cpu==1.7.4 \
-    transformers==4.30.2 \
-    numpy==1.24.3
+# Install Python packages
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy only essential application files
 COPY app_heroku.py .
