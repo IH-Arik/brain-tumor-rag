@@ -187,10 +187,17 @@ def rag_stats():
 @app.route('/predict_with_rag', methods=['POST'])
 def predict_with_rag():
     # Get prediction first
-    prediction_result = predict()
+    prediction_response = predict()
     
-    if isinstance(prediction_result, tuple):
-        return prediction_result
+    # Check if it's an error response
+    if isinstance(prediction_response, tuple):
+        return prediction_response
+    
+    # Convert response to dict if needed
+    if hasattr(prediction_response, 'get_json'):
+        prediction_result = prediction_response.get_json()
+    else:
+        prediction_result = prediction_response
     
     # Add simple medical info
     prediction_result['rag_info'] = {
