@@ -29,13 +29,15 @@ COPY app_heroku.py .
 COPY knowledge_base.py .
 COPY vector_store.py .
 COPY rag_engine.py .
-COPY labels.txt .
 
 # Create necessary directories
 RUN mkdir -p uploads static templates
 
 # Copy templates
 COPY templates/ templates/
+
+# Create labels.txt if it doesn't exist
+RUN echo -e "glioma_tumor\nmeningioma_tumor\nno_tumor\npituitary_tumor" > labels.txt
 
 # Create uploads directory
 RUN mkdir -p uploads
