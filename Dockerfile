@@ -1,29 +1,30 @@
-# Multi-stage build for minimal image
-FROM python:3.9-alpine AS builder
-
-# Install build dependencies
-RUN apk add --no-cache gcc musl-dev linux-headers
-
-# Create requirements.txt
-RUN printf "flask==2.3.3\ntorch==2.0.1\ntorchvision==0.15.2\npillow==10.0.0\nsentence-transformers==2.2.2\nscikit-learn==1.3.0\nfaiss-cpu==1.7.4\ntransformers==4.30.2\nnumpy==1.24.3\n" > requirements.txt
-
-# Install Python packages
-RUN pip install --no-cache-dir --user -r requirements.txt
-
-# Final minimal stage
-FROM python:3.9-alpine
-
-# Install only runtime dependencies
-RUN apk add --no-cache curl
-
-# Copy installed packages from builder
-COPY --from=builder /root/.local /root/.local
-
-# Set PATH
-ENV PATH=/root/.local/bin:$PATH
+FROM python:3.9-slim
 
 # Set working directory
 WORKDIR /app
+
+# Install system dependencies only
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create requirements.txt with CPU-only versions
+RUN printf "flask==2.3.3\ntorch==2.0.1+cpu\ntorchvision==0.15.2+cpu\npillow==10.0.0\nsentence-transformers==2.2.2\nscikit-learn==1.3.0\nfaiss-cpu==1.7.4\ntransformers==4.30.2\nnumpy==1.24.3\n" > requirements.txt
+
+# Install Python packages with CPU-only PyTorch
+RUN pip install --no-cache-dir \
+    --index-url https://download.pytorch.org/whl/cpu \
+    torch==2.0.1+cpu \
+    torchvision==0.15.2+cpu \
+    && pip install --no-cache-dir \
+    flask==2.3.3 \
+    pillow==10.0.0 \
+    sentence-transformers==2.2.2 \
+    scikit-learn==1.3.0 \
+    faiss-cpu==1.7.4 \
+    transformers==4.30.2 \
+    numpy==1.24.3
 
 # Copy only essential application files
 COPY app_heroku.py .
@@ -49,7 +50,6 @@ EXPOSE 5000
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV PORT=5000
-ENV PYTHONPATH=/root/.local/lib/python3.9/site-packages
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
