@@ -37,9 +37,11 @@ RUN curl -fsSL https://ollama.ai/install.sh | sh
 # Set working directory
 WORKDIR /app
 
+# Copy requirements first (for better caching)
+COPY requirements.txt ./
+
 # Copy application files
 COPY app_ollama.py app_heroku.py
-COPY requirements.txt ./
 
 # Create necessary directories
 RUN mkdir -p uploads static
