@@ -23,7 +23,11 @@ RUN pip install --no-cache-dir \
     pillow==10.0.0 \
     timm==0.9.7 \
     numpy==1.24.3 \
-    requests==2.31.0
+    requests==2.31.0 \
+    langchain==0.0.340 \
+    faiss-cpu==1.7.4 \
+    sentence-transformers==2.2.2 \
+    huggingface-hub==0.19.4
 
 # Copy only essential application files
 COPY app_langchain.py app_heroku.py
