@@ -357,34 +357,77 @@ def get_ollama_response(question):
     try:
         if rag_chain:
             print("🦙 Using Ollama RAG...")
-            result = rag_chain({"query": question})
             
-            # Extract answer and sources
-            answer = result.get('result', '')
-            sources = result.get('source_documents', [])
-            
-            # Add medical disclaimer if it's a medical question
+            # Check if it's a medical question or general conversation
             question_lower = question.lower()
             medical_keywords = ['brain tumor', 'glioma', 'meningioma', 'pituitary', 'cancer', 'tumor', 'symptom', 'treatment', 'diagnosis', 'medical']
             
-            if any(keyword in question_lower for keyword in medical_keywords):
-                answer += " This information is for educational purposes only and is not a substitute for professional medical advice. Always consult with a qualified healthcare provider for diagnosis and treatment."
+            is_medical = any(keyword in question_lower for keyword in medical_keywords)
             
-            return answer, sources
+            if is_medical:
+                # Use RAG for medical questions
+                result = rag_chain({"query": question})
+                
+                # Extract answer and sources
+                answer = result.get('result', '')
+                sources = result.get('source_documents', [])
+                
+                # Add medical disclaimer
+                answer += " This information is for educational purposes only and is not a substitute for professional medical advice. Always consult with a qualified healthcare provider for diagnosis and treatment."
+                
+                return answer, sources
+            else:
+                # Use direct LLM for general conversation
+                print("💬 Using direct LLM for general conversation...")
+                llm = rag_chain.llm
+                
+                # Create a conversational prompt
+                conversational_prompt = f"""You are a helpful and friendly AI assistant. Respond naturally and conversationally to the user's message. Be engaging, polite, and helpful.
+
+User: {question}
+Assistant:"""
+                
+                answer = llm(conversational_prompt)
+                
+                return answer, []
         else:
-            # Fallback to simple keyword matching
-            return get_fallback_response(question), []
+            # Fallback to enhanced responses
+            return get_enhanced_fallback_response(question), []
             
     except Exception as e:
         print(f"❌ Ollama RAG error: {e}")
-        return get_fallback_response(question), []
+        return get_enhanced_fallback_response(question), []
 
-def get_fallback_response(question):
-    """Fallback response system"""
+def get_enhanced_fallback_response(question):
+    """Enhanced fallback response system for both medical and general questions"""
     question = question.lower()
     
-    # Simple keyword responses
-    if 'glioma' in question:
+    # Greetings and introductions
+    if any(greeting in question for greeting in ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening']):
+        return "Hello! I'm here to help you. I can provide information about brain tumors and medical topics, or we can have a general conversation. How can I assist you today?"
+    
+    # Name introductions
+    elif any(name_intro in question for name_intro in ['my name is', 'i am', 'i\'m', 'call me']):
+        return "Nice to meet you! I'm here to help with any questions you might have about brain tumors, medical topics, or just to chat. What would you like to know?"
+    
+    # How are you questions
+    elif any(how_are in question for how_are in ['how are you', 'how do you do', 'how\'s it going']):
+        return "I'm doing great, thank you for asking! I'm here and ready to help you with any questions about brain tumors or other topics you'd like to discuss."
+    
+    # What can you do questions
+    elif any(what_can in question for what_can in ['what can you do', 'what do you do', 'how can you help']):
+        return "I can provide information about brain tumors, medical conditions, symptoms, treatments, and diagnoses. I can also have general conversations, answer questions, and chat with you about various topics. Feel free to ask me anything!"
+    
+    # Thank you responses
+    elif any(thanks in question for thanks in ['thank', 'thanks', 'appreciate']):
+        return "You're very welcome! I'm glad I could help. Is there anything else you'd like to know about brain tumors or any other topic?"
+    
+    # Goodbye responses
+    elif any(goodbye in question for goodbye in ['bye', 'goodbye', 'see you', 'farewell']):
+        return "Goodbye! Take care and feel free to come back anytime if you have more questions. Stay healthy!"
+    
+    # Medical questions (existing logic)
+    elif 'glioma' in question:
         return "Glioma is a type of tumor that occurs in the brain and spinal cord, originating from glial cells. These tumors can be benign or malignant and may require surgery, radiation, or chemotherapy depending on their grade and location."
     elif 'meningioma' in question:
         return "Meningioma is a tumor that arises from the meninges, the membranes surrounding the brain and spinal cord. Most meningiomas are benign and grow slowly, often requiring monitoring or surgical removal if symptomatic."
@@ -396,8 +439,10 @@ def get_fallback_response(question):
         return "Common brain tumor symptoms include persistent headaches that worsen over time, seizures or convulsions, vision problems, memory loss, personality changes, and difficulty with balance or coordination."
     elif 'treatment' in question:
         return "Brain tumor treatment options include surgery to remove the tumor, radiation therapy to destroy cancer cells, chemotherapy drugs to kill rapidly dividing cells, and targeted therapy."
+    
+    # General conversation fallback
     else:
-        return "I can provide information about brain tumors and related medical topics. Please ask a more specific question about brain tumors, symptoms, treatments, or types of tumors."
+        return "That's interesting! While I specialize in providing information about brain tumors and medical topics, I'm also here to chat. Could you tell me more about what you'd like to know, or do you have any questions about brain health?"
 
 # Initialize Ollama RAG
 setup_ollama_rag()
