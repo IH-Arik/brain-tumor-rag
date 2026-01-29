@@ -29,10 +29,10 @@ device = torch.device('cpu')
 def download_model_from_url():
     """Download model from external URL"""
     try:
-        # Try GitHub raw URL first
+        # Try GitHub raw URL (correct one first)
         model_urls = [
-            "https://raw.githubusercontent.com/IH-Arik/brain-tumor-rag/main/brain_tumor_model.pth",
-            "https://github.com/IH-Arik/brain-tumor-rag/raw/main/brain_tumor_model.pth"
+            "https://github.com/IH-Arik/brain-tumor-rag/raw/main/brain_tumor_model.pth",
+            "https://raw.githubusercontent.com/IH-Arik/brain-tumor-rag/main/brain_tumor_model.pth"
         ]
         
         for url in model_urls:
@@ -41,10 +41,15 @@ def download_model_from_url():
                 response = requests.get(url, timeout=30)
                 if response.status_code == 200:
                     model_data = response.content
-                    with open('brain_tumor_model.pth', 'wb') as f:
-                        f.write(model_data)
-                    print(f"Model downloaded successfully! Size: {len(model_data) / (1024*1024):.2f} MB")
-                    return True
+                    # Check if we got actual model data (not empty)
+                    if len(model_data) > 1000000:  # At least 1MB
+                        with open('brain_tumor_model.pth', 'wb') as f:
+                            f.write(model_data)
+                        print(f"Model downloaded successfully! Size: {len(model_data) / (1024*1024):.2f} MB")
+                        return True
+                    else:
+                        print(f"Downloaded file too small: {len(model_data)} bytes")
+                        continue
                 else:
                     print(f"Failed to download from {url}, status: {response.status_code}")
             except Exception as e:
