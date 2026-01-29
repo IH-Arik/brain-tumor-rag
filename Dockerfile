@@ -26,7 +26,7 @@ RUN pip install --no-cache-dir \
     requests==2.31.0
 
 # Copy only essential application files
-COPY app_url_model.py app_heroku.py
+COPY app_qwen.py app_heroku.py
 
 # Create necessary directories and copy static files
 RUN mkdir -p uploads static
