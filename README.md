@@ -1,29 +1,29 @@
-# 🧠 Brain Tumor Classification with RAG System
+#  Brain Tumor Classification with RAG System
 
 A comprehensive medical AI system that combines deep learning-based brain tumor classification with Retrieval-Augmented Generation (RAG) for intelligent medical information retrieval.
 
-## ✨ Features
+##  Features
 
-### 🎯 Core Classification
+###  Core Classification
 - **4-Class Classification**: Glioma, Meningioma, Pituitary, No Tumor
 - **Deep Learning Model**: ResNet18-based CNN
 - **High Accuracy**: Trained on medical MRI images
 - **Web Interface**: Modern, responsive UI
 
-### 🤖 RAG Capabilities
+###  RAG Capabilities
 - **Medical Knowledge Base**: 10+ comprehensive medical documents
 - **Intelligent Q&A**: Ask questions about brain tumors
 - **Context-Aware Responses**: AI-powered medical information
 - **Source Attribution**: Transparent information sourcing
 - **Category-Specific Queries**: Targeted information retrieval
 
-### 🌐 Deployment Options
+###  Deployment Options
 - **Local Deployment**: Run on your machine
 - **GitHub Pages**: Frontend deployment
 - **Cloud Platforms**: AWS, Azure, GCP ready
 - **Docker Support**: Containerized deployment
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Local Development
 ```bash
@@ -48,7 +48,7 @@ Visit `http://localhost:5000` to access the web interface.
 python test_rag.py
 ```
 
-## 📋 Requirements
+##  Requirements
 
 ```txt
 flask>=2.3.0
@@ -63,7 +63,7 @@ transformers>=4.30.0
 numpy>=1.24.0
 ```
 
-## 🏗️ Architecture
+##  Architecture
 
 ```
 brain-tumor-rag/
@@ -82,7 +82,7 @@ brain-tumor-rag/
 └── brain_tumor_model.pth # Trained model
 ```
 
-## 🎮 Usage
+##  Usage
 
 ### 1. Image Classification
 1. Upload an MRI image (JPG/PNG)
@@ -134,7 +134,7 @@ result = response.json()
 print(f"Answer: {result['answer']}")
 ```
 
-## 🧠 Knowledge Base Content
+##  Knowledge Base Content
 
 The system includes comprehensive information about:
 
@@ -146,7 +146,7 @@ The system includes comprehensive information about:
 - **Prognosis**: Survival rates, prognostic factors
 - **Emerging Therapies**: Immunotherapy, targeted treatments
 
-## 🔧 Configuration
+##  Configuration
 
 ### Environment Variables
 ```bash
@@ -159,7 +159,7 @@ The system includes comprehensive information about:
 - **Vector Store**: FAISS with cosine similarity
 - **Embedding Model**: `all-MiniLM-L6-v2`
 
-## 🌐 Deployment Options
+##  Deployment Options
 
 ### 1. GitHub Pages (Frontend Only)
 ```bash
@@ -202,21 +202,21 @@ EXPOSE 5000
 CMD ["python", "app.py"]
 ```
 
-## 📊 Model Performance
+##  Model Performance
 
 - **Accuracy**: ~95% on test set
 - **Classes**: 4 (Glioma, Meningioma, Pituitary, No Tumor)
 - **Input Size**: 224x224 RGB images
 - **Model Architecture**: ResNet18 (modified)
 
-## ⚠️ Medical Disclaimer
+##  Medical Disclaimer
 
 **Important**: This system is for educational and research purposes only. 
 - Not a substitute for professional medical diagnosis
 - Always consult qualified healthcare professionals
 - Use as supplementary information tool only
 
-## 🤝 Contributing
+##  Contributing
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature-name`
@@ -230,18 +230,18 @@ CMD ["python", "app.py"]
 - Update documentation
 - Ensure medical information accuracy
 
-## 📝 License
+##  License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+##  Acknowledgments
 
 - Medical knowledge from reputable sources
 - Hugging Face for NLP models
 - FAISS for vector similarity search
 - Flask for web framework
 
-## 📞 Contact
+##  Contact
 
 - **Developer**: Md Ittesaf Hossain
 - **Email**: [ittesafarik@gmail.com]
